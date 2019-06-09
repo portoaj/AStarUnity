@@ -1,0 +1,2 @@
+C:\Users\andre\Documents\GitHub\AStarUnity\AStar\obj\Debug\Assembly-CSharp.csprojAssemblyReference.cache
+C:\Users\andre\Documents\GitHub\AStarUnity\AStar\obj\Debug\Assembly-CSharp.csproj.CoreCompileInputs.cache

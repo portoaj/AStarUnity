@@ -94,4 +94,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09643b238a53b2b41bd32e35ad8de8c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkable: 0
+  water: 1
+  x: 0
+  y: 0
+  gScore: 2147483647
+  hScore: 2147483647
+  parent: {fileID: 0}
