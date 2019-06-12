@@ -10,7 +10,6 @@ public class Pathfinding : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        nodes = TileSpawner.allNodes;
         //TileSpawner.getNeighbors(TileSpawner.getNodeFromPos(2,2));
         AStar(TileSpawner.getNodeFromPos(0,0), TileSpawner.getNodeFromPos(9,9));
     }
@@ -25,11 +24,9 @@ public class Pathfinding : MonoBehaviour
         //
         foreach(Node node in nodes)
         {
-            if(!node.getWater())
-            {
-                Gizmos.color = new Color(1, 0, 0, 0.5f);
-                Gizmos.DrawCube(node.gameObject.transform.position, new Vector3(.1f, .1f, .1f));
-            }
+            
+            Gizmos.color = new Color(1, 0, 0, 0.5f);
+            Gizmos.DrawCube(node.gameObject.transform.position, new Vector3(.1f, .1f, .1f));
         }
         rebuildPath(TileSpawner.getNodeFromPos(9, 9));
     }
@@ -54,8 +51,9 @@ public class Pathfinding : MonoBehaviour
         startNode.setGScore(0);
         updateH(startNode, targetNode);
         Node currentNode = open[0];
-        while(open.Count != 0 && county < 500)
+        while(open.Count != 0 && county < 5000)
         {
+
             county++;
             Debug.Log("yeet1");
             //Default current node is the first node in the open list
@@ -73,6 +71,7 @@ public class Pathfinding : MonoBehaviour
                     currentNode = node;
                 }
             }
+            Debug.LogWarning(open.Count + " "+ currentNode.name + currentNode.getX() + " " + currentNode.getY());
             Debug.Log("yeet2" + currentNode);
             //If current node is the target node we have found the solution: exit the loop
             if (currentNode == targetNode)
@@ -83,23 +82,27 @@ public class Pathfinding : MonoBehaviour
             Debug.Log("yeet3" + neighbors.Count);
             foreach (Node neighbor in neighbors)
             {
+                nodes.Add(neighbor);
                 //Calculate the cost to get from the origin to this neighbor node moving through currentNode
                 int cost;
                 if (neighbor.getWater())
+                {
+                    Debug.Log("yeet10");
                     cost = currentNode.getGScore() + 10;
+                }
                 else
                     cost = currentNode.getGScore() + 1;
                 //Ignore unwalkable tiles
                 if(open.Contains(neighbor))
                 {
-                    if(neighbor.getGScore() <= cost)
+                    if(neighbor.getGScore() <= cost || neighbor == targetNode)
                     {
                         continue;
                     }
                 }
                 else if(closed.Contains(neighbor))
                 {
-                    if(neighbor.getGScore() <= cost)
+                    if(neighbor.getGScore() <= cost || neighbor == targetNode)
                     {
                         closed.Remove(neighbor);
                         open.Add(neighbor);
@@ -116,7 +119,9 @@ public class Pathfinding : MonoBehaviour
             }
             closed.Add(currentNode);
         }
-        if(currentNode != targetNode)
+        if(county == 5000)
+            Debug.Log("Reached maximum scan attempts");
+        if (currentNode != targetNode)
             Debug.Log("A-Star could not generate a path or encountered a pathing error");
     }
     void updateH(Node node, Node targetNode)

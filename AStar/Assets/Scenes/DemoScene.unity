@@ -329,11 +329,7 @@ MonoBehaviour:
     type: 3}
   waterTile: {fileID: 4180895436935465345, guid: 5febcc0593d682641a5d51c95efb26d9,
     type: 3}
-  width: 10
-  height: 10
-  offsetX: -5
-  offsetY: -5
-  normalChance: 0.85
+  normalChance: 0.6
 --- !u!4 &544115748
 Transform:
   m_ObjectHideFlags: 0
