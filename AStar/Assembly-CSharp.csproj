@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Node.cs" />
     <Compile Include="Assets\Scripts\Pathfinding.cs" />
+    <Compile Include="Assets\Scripts\PlayerMotorScript.cs" />
     <Compile Include="Assets\Scripts\TileSpawner.cs" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>C:/Users/andre/Documents/GitHub/AStarUnity/AStar/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>

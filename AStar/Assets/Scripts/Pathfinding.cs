@@ -7,41 +7,28 @@ public class Pathfinding : MonoBehaviour
     List<Node> nodes = new List<Node>();
     List<Node> open = new List<Node>();
     List<Node> closed = new List<Node>();
-    // Start is called before the first frame update
-    void Start()
-    {
-        //TileSpawner.getNeighbors(TileSpawner.getNodeFromPos(2,2));
-        AStar(TileSpawner.getNodeFromPos(0,0), TileSpawner.getNodeFromPos(9,9));
-    }
+    [SerializeField] Transform target;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     void OnDrawGizmosSelected()
     {
-        //
-        foreach(Node node in nodes)
-        {
-            
-            Gizmos.color = new Color(1, 0, 0, 0.5f);
-            Gizmos.DrawCube(node.gameObject.transform.position, new Vector3(.1f, .1f, .1f));
-        }
-        rebuildPath(TileSpawner.getNodeFromPos(9, 9));
+
+        rebuildPath(TileSpawner.getNearestNode(transform.position.x, transform.position.y), TileSpawner.getNearestNode(target.position.x, target.position.y));
     }
-    void rebuildPath(Node targetNode)
+    public void rebuildPath(Node startNode, Node targetNode)
     {
+       
         Node currentNode = targetNode;
-        while (currentNode.getParent() != null)
+        while (currentNode.getParent() != null && currentNode != startNode)
         {
             Gizmos.color = Color.blue;
             Gizmos.DrawLine(currentNode.transform.position, currentNode.getParent().transform.position);
             currentNode = currentNode.getParent();
         }
+        Debug.Log("yee");
     }
-    void AStar(Node startNode, Node targetNode)
+    public void AStar(Node startNode, Node targetNode)
     {
+        TileSpawner.clearNodeParents();
         int county = 0;
         //Clear lists from previous AStar calls
         open.Clear();
@@ -51,82 +38,117 @@ public class Pathfinding : MonoBehaviour
         startNode.setGScore(0);
         updateH(startNode, targetNode);
         Node currentNode = open[0];
-        while(open.Count != 0 && county < 5000)
+        while (open.Count != 0 && county < 500)
         {
 
             county++;
-            Debug.Log("yeet1");
+
             //Default current node is the first node in the open list
             currentNode = open[0];
             updateH(currentNode, targetNode);
             int lowestFScore = open[0].getFScore();
             //Find the best current node (lowest fScore Node in open)
-            foreach(Node node in open)
+            foreach (Node node in open)
             {
                 updateH(node, targetNode);
                 int fScore = node.getFScore();
-                if(fScore < lowestFScore)
+                if (fScore < lowestFScore)
                 {
                     lowestFScore = fScore;
                     currentNode = node;
                 }
             }
-            Debug.LogWarning(open.Count + " "+ currentNode.name + currentNode.getX() + " " + currentNode.getY());
-            Debug.Log("yeet2" + currentNode);
+
             //If current node is the target node we have found the solution: exit the loop
             if (currentNode == targetNode)
                 break;
-            
-            //Generates the neighbor nodes to be processed later
+            open.Remove(currentNode);
+            closed.Add(currentNode);
             List<Node> neighbors = TileSpawner.getNeighbors(currentNode);
-            Debug.Log("yeet3" + neighbors.Count);
+            foreach(Node neighbor in neighbors)
+            {
+                if (closed.Contains(neighbor))
+                    continue;
+                int cost = currentNode.getGScore();
+                if (neighbor.getWater())
+                    cost += 2;
+                else
+                    cost += 1;
+
+                if (!open.Contains(neighbor))
+                    open.Add(neighbor);
+                else if (cost >= neighbor.getGScore())
+                    continue;
+                neighbor.setParent(currentNode);
+                neighbor.setGScore(cost);
+                updateH(neighbor, targetNode);
+            }
+        }
+    }
+    public void AStar(float x1, float y1, float x2, float y2)
+    {
+
+        Node startNode = TileSpawner.getNearestNode(x1,y1);
+        Node targetNode = TileSpawner.getNearestNode(x2, y2);
+        int county = 0;
+        //Clear lists from previous AStar calls
+        open.Clear();
+        closed.Clear();
+        //Add starting node to open list and update its fScore (by updating the g and h scores)
+        open.Add(startNode);
+        startNode.setGScore(0);
+        updateH(startNode, targetNode);
+        Node currentNode = open[0];
+        while (open.Count != 0 && county < 500)
+        {
+
+            county++;
+
+            //Default current node is the first node in the open list
+            currentNode = open[0];
+            updateH(currentNode, targetNode);
+            int lowestFScore = open[0].getFScore();
+            //Find the best current node (lowest fScore Node in open)
+            foreach (Node node in open)
+            {
+                updateH(node, targetNode);
+                int fScore = node.getFScore();
+                if (fScore < lowestFScore)
+                {
+                    lowestFScore = fScore;
+                    currentNode = node;
+                }
+            }
+
+            //If current node is the target node we have found the solution: exit the loop
+            if (currentNode == targetNode)
+                break;
+            open.Remove(currentNode);
+            closed.Add(currentNode);
+            List<Node> neighbors = TileSpawner.getNeighbors(currentNode);
             foreach (Node neighbor in neighbors)
             {
-                nodes.Add(neighbor);
-                //Calculate the cost to get from the origin to this neighbor node moving through currentNode
-                int cost;
+                if (closed.Contains(neighbor))
+                    continue;
+                int cost = currentNode.getGScore();
                 if (neighbor.getWater())
-                {
-                    Debug.Log("yeet10");
-                    cost = currentNode.getGScore() + 10;
-                }
+                    cost += 3;
                 else
-                    cost = currentNode.getGScore() + 1;
-                //Ignore unwalkable tiles
-                if(open.Contains(neighbor))
-                {
-                    if(neighbor.getGScore() <= cost || neighbor == targetNode)
-                    {
-                        continue;
-                    }
-                }
-                else if(closed.Contains(neighbor))
-                {
-                    if(neighbor.getGScore() <= cost || neighbor == targetNode)
-                    {
-                        closed.Remove(neighbor);
-                        open.Add(neighbor);
-                        continue;
-                    }
-                }
-                else
-                {
+                    cost += 1;
+
+                if (!open.Contains(neighbor))
                     open.Add(neighbor);
-                    updateH(neighbor, targetNode);
-                }
-                neighbor.setGScore(cost);
+                else if (cost >= neighbor.getGScore())
+                    continue;
                 neighbor.setParent(currentNode);
+                neighbor.setGScore(cost);
+                updateH(neighbor, targetNode);
             }
-            closed.Add(currentNode);
         }
-        if(county == 5000)
-            Debug.Log("Reached maximum scan attempts");
-        if (currentNode != targetNode)
-            Debug.Log("A-Star could not generate a path or encountered a pathing error");
     }
     void updateH(Node node, Node targetNode)
     {
-        node.setHScore((int)Mathf.Pow(node.getX() - targetNode.getX(), 2) + (int)Mathf.Pow(node.getY() - targetNode.getY(), 2));
+        node.setHScore(Mathf.RoundToInt(Mathf.Sqrt(Mathf.Pow(node.getX() - targetNode.getX(), 2) + Mathf.Pow(node.getY() - targetNode.getY(), 2))));
     }
 }
 //Sources: Wikipedia, http://mat.uab.cat/~alseda/MasterOpt/AStar-Algorithm.pdf, https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2

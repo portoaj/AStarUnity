@@ -55,20 +55,16 @@ public class TileSpawner : MonoBehaviour
         {
             for (int y = -1; y < 2; y++)
             {
-                Debug.Log("x: " +  x + "y: " + y);
                 if (nodex + x >= width || nodex + x < 0 || nodey + y >= height || nodey + y < 0)
                 {
-                    Debug.Log("yeet4");
                     continue;
                 }
                 else if (nodesOrdered[nodex + x, nodey + y] == currentNode)
                 {
-                    Debug.Log("yeet5");
                     continue;
                 }
                 else
                 {
-                    Debug.Log("yeet6");
                     neighbors.Add(nodesOrdered[nodex + x, nodey + y]);
                 }
             }
@@ -78,5 +74,27 @@ public class TileSpawner : MonoBehaviour
     public static Node getNodeFromPos(int x, int y)
     {
         return nodesOrdered[x, y];
+    }
+    public static void clearNodeParents()
+    {
+        foreach (Node node in allNodes)
+        {
+            node.setParent(null);
+        }
+    }
+    public static Node getNearestNode(float x, float y)
+    {
+        float minDistance = Mathf.Abs(allNodes[0].getX() - x) + Mathf.Abs(allNodes[0].getY() - y);
+        Node minNode = allNodes[0];
+        foreach(Node node in allNodes)
+        {
+            float dist = Mathf.Abs(node.getX() - x) + Mathf.Abs(node.getY() - y);
+            if(dist < minDistance)
+            {
+                minDistance = dist;
+                minNode = node;
+            }
+        }
+        return minNode;
     }
 }
